@@ -1,0 +1,34 @@
+{{- if not .Values.rollout.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: {{ include "sample-api.fullname" . }}}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector: {matchLabels: {app.kubernetes.io/name: {{ include "sample-api.name" . }}}}
+  template:
+    metadata: {labels: {app.kubernetes.io/name: {{ include "sample-api.name" . }}}}
+    spec:
+      serviceAccountName: {{ include "sample-api.fullname" . }}
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: api
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        ports: [{containerPort: 8080}]
+        env: [{name: ENVIRONMENT, value: {{ .Values.environment | quote }} }]
+        readinessProbe: {httpGet: {path: /ready, port: 8080}, initialDelaySeconds: 3, periodSeconds: 5}
+        livenessProbe: {httpGet: {path: /health, port: 8080}, initialDelaySeconds: 10, periodSeconds: 10}
+        startupProbe: {httpGet: {path: /health, port: 8080}, failureThreshold: 30, periodSeconds: 2}
+        resources: {{- toYaml .Values.resources | nindent 10 }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector: {matchLabels: {app.kubernetes.io/name: {{ include "sample-api.name" . }}}}
+              topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector: {matchLabels: {app.kubernetes.io/name: {{ include "sample-api.name" . }}}}
+{{- end }}

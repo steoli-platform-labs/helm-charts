@@ -1,0 +1,9 @@
+name: helm
+on: [push, pull_request]
+jobs:
+ lint:
+  runs-on: ubuntu-latest
+  steps:
+  - uses: actions/checkout@v5
+  - uses: azure/setup-helm@v5
+  - run: helm lint charts/sample-api
