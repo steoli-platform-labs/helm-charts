@@ -9,10 +9,14 @@ spec:
     metadata: {labels: {app.kubernetes.io/name: {{ include "sample-api.name" . }}}}
     spec:
       serviceAccountName: {{ include "sample-api.fullname" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
       terminationGracePeriodSeconds: 30
       containers:
       - name: api
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports: [{containerPort: 8080}]
         env: [{name: ENVIRONMENT, value: {{ .Values.environment | quote }} }]
         readinessProbe: {httpGet: {path: /ready, port: 8080}, initialDelaySeconds: 3, periodSeconds: 5}
