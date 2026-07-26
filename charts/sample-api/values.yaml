@@ -12,4 +12,5 @@ resources:
 serviceAccount: {create: true, annotations: {}}
 autoscaling: {enabled: true, minReplicas: 3, maxReplicas: 10, targetCPUUtilizationPercentage: 70}
 rollout: {enabled: true}
+pdb: {enabled: true, maxUnavailable: 1}
 secret: {enabled: false, secretStoreName: aws-secrets-manager, remoteKey: solab/sample-api}
