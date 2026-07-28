@@ -18,7 +18,9 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports: [{containerPort: 8080}]
-        env: [{name: ENVIRONMENT, value: {{ .Values.environment | quote }} }]
+        env:
+        - {name: ENVIRONMENT, value: {{ .Values.environment | quote }} }
+        - {name: APP_VERSION, value: {{ .Values.image.tag | quote }} }
         readinessProbe: {httpGet: {path: /ready, port: 8080}, initialDelaySeconds: 3, periodSeconds: 5}
         livenessProbe: {httpGet: {path: /health, port: 8080}, initialDelaySeconds: 10, periodSeconds: 10}
         startupProbe: {httpGet: {path: /health, port: 8080}, failureThreshold: 30, periodSeconds: 2}
